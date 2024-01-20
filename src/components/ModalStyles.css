@@ -1,0 +1,35 @@
+/* ModalStyles.css */
+
+/* Styles for the modal container */
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* 中央寄せ */
+  padding: 20px;
+  max-width: 400px; /* 例として400pxに指定 */
+  margin: 0 auto; /* 水平方向中央寄せ */
+  background-color: #fff; /* 背景色を白に指定 */
+  border-radius: 8px; /* 角丸 */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* ドロップシャドウ */
+}
+
+/* Styles for the text fields */
+.textField {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Styles for the button */
+.completeButton {
+  background-color: #4caf50; /* Green */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.completeButton:hover {
+  background-color: #45a049;
+}

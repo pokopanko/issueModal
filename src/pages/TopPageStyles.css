@@ -1,0 +1,23 @@
+/* TopPageStyles.css */
+
+/* Styles for the top page container */
+.topPageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Styles for the display button */
+.displayButton {
+  background-color: #007bff; /* Blue */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.displayButton:hover {
+  background-color: #0056b3;
+}
