@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@mui/material";
 import CustomModal from "../components/Modal";
 import "./TopPageStyles.css"; // CSSファイルをimport
+import { generateURL } from "../logic/url";
 
 const TopPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -20,6 +21,15 @@ const TopPage: React.FC = () => {
     console.log("Username:", username);
     console.log("Password:", password);
   };
+
+  // テスト用例
+  const resultURL = generateURL("1", "田中", {
+    url: "http://input.this.co.jp",
+    user_id: "R01234",
+    password: "1234testpass",
+  });
+
+  console.log(resultURL);
 
   return (
     <div className="topPageContainer">
