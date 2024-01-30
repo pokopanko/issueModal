@@ -1,0 +1,269 @@
+Certainly! Let's break down the `MyApp` component into smaller components. I'll create separate components for the top-level modal, the mini modal, and the table section. I'll also create a new file for each component. Here's an example of how you might structure it:
+
+1. **TopPageModal.tsx:**
+
+```tsx
+import React from "react";
+import {
+  Modal,
+  AppBar,
+  Tabs,
+  Tab,
+  Box,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  Select,
+  MenuItem,
+} from "@mui/material";
+
+interface TopPageModalProps {
+  open: boolean;
+  onClose: () => void;
+  selectedTab: number;
+  handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
+  selectedToggle: string;
+  handleToggleChange: (event: React.ChangeEvent<{ value: unknown }>) => void;
+}
+
+const TopPageModal: React.FC<TopPageModalProps> = ({
+  open,
+  onClose,
+  selectedTab,
+  handleTabChange,
+  selectedToggle,
+  handleToggleChange,
+}) => {
+  return (
+    <Modal open={open} onClose={onClose}>
+      <div>
+        <AppBar position="static">
+          <Tabs value={selectedTab} onChange={handleTabChange}>
+            <Tab label="設定１" />
+            <Tab label="設定２" />
+          </Tabs>
+        </AppBar>
+        <Box bgcolor="white" p={3}>
+          {selectedTab === 0 && (
+            <Paper>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>名称</TableCell>
+                      <TableCell>
+                        <Select
+                          value={selectedToggle}
+                          onChange={handleToggleChange}
+                        >
+                          <MenuItem value="A">A</MenuItem>
+                          <MenuItem value="B">B</MenuItem>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                </Table>
+              </TableContainer>
+            </Paper>
+          )}
+
+          {selectedTab === 1 && (
+            // Include the components for the second tab content here
+            // (e.g., InputField, AddButton, and DataTable)
+          )}
+        </Box>
+      </div>
+    </Modal>
+  );
+};
+
+export default TopPageModal;
+```
+
+2. **MiniModal.tsx:**
+
+```tsx
+import React from "react";
+import {
+  Modal,
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+} from "@mui/material";
+
+interface MiniModalProps {
+  open: boolean;
+  onClose: () => void;
+  isEditing: boolean;
+  editedInput: string;
+  selectedRowInput: string | undefined;
+  handleEditClick: () => void;
+  handleSaveClick: () => void;
+  handleDeleteClick: () => void;
+  handleConfirmDelete: () => void;
+  handleCancelDelete: () => void;
+}
+
+const MiniModal: React.FC<MiniModalProps> = ({
+  open,
+  onClose,
+  isEditing,
+  editedInput,
+  selectedRowInput,
+  handleEditClick,
+  handleSaveClick,
+  handleDeleteClick,
+  handleConfirmDelete,
+  handleCancelDelete,
+}) => {
+  return (
+    <Modal open={open} onClose={onClose}>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "white",
+          padding: "20px",
+          borderRadius: "8px",
+        }}
+      >
+        <TextField
+          variant="outlined"
+          value={isEditing ? editedInput : selectedRowInput}
+          onChange={(e) => isEditing && handleEditClick(e.target.value)}
+          disabled={!isEditing}
+        />
+        <Button
+          variant="contained"
+          onClick={isEditing ? handleSaveClick : handleEditClick}
+        >
+          {isEditing ? "保存" : "編集"}
+        </Button>
+        <Button variant="contained" onClick={handleDeleteClick}>
+          削除
+        </Button>
+        <Dialog open={isEditing} onClose={handleCancelDelete}>
+          <DialogTitle>削除しますか？</DialogTitle>
+          <DialogActions>
+            <Button onClick={handleConfirmDelete}>はい</Button>
+            <Button onClick={handleCancelDelete}>いいえ</Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    </Modal>
+  );
+};
+
+export default MiniModal;
+```
+
+3. **TableSection.tsx:**
+
+```tsx
+import React from "react";
+import {
+  TextField,
+  Button,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+} from "@mui/material";
+
+interface TableSectionProps {
+  inputValue: string;
+  handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleAddClick: () => void;
+  tableData: { id: number; input: string }[];
+  handleRowClick: (rowData: { id: number; input: string }) => void;
+}
+
+const TableSection: React.FC<TableSectionProps> = ({
+  inputValue,
+  handleInputChange,
+  handleAddClick,
+  tableData,
+  handleRowClick,
+}) => {
+  return (
+    <Paper>
+      <TextField
+        label="入力欄"
+        variant="outlined"
+        value={inputValue}
+        onChange={handleInputChange}
+      />
+      <Button variant="contained" onClick={handleAddClick}>
+        追加
+      </Button>
+      <TableContainer style={{ maxHeight: 300 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>入力済み</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tableData.map((row) => (
+              <TableRow key={row.id} onClick={() => handleRowClick(row)}>
+                <TableCell>{row.id}</TableCell>
+                <TableCell>{row.input}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+};
+
+export default TableSection;
+```
+
+Finally, modify your `MyApp.tsx` to use these components:
+
+```tsx
+import React, { useState } from "react";
+import {
+  Button,
+  Snackbar,
+  IconButton,
+  SnackbarCloseReason,
+} from "@mui/material";
+import TopPageModal from "./TopPageModal";
+import MiniModal from "./MiniModal";
+import TableSection from "./TableSection";
+
+const MyApp: React.FC = () => {
+  // ... (existing state and handlers)
+
+  return (
+    <div>
+      {/* Top Page */}
+      <Button onClick={handleOpenTopPageModal}>展開ボタン</Button>
+
+      {/* Top Page Modal */}
+      <TopPageModal
+        open={isTopPageModalOpen}
+        onClose={handleCloseTopPageModal}
+        selectedTab={selectedTab}
+        handleTabChange={handleTabChange}
+        selectedToggle={selectedToggle}
+        handleToggleChange={handleToggleChange}
+      />
+
+      {/* Mini Modal */}
+      <MiniModal
+        open={isMiniModalOpen}
+        onClose={handleCloseMini
