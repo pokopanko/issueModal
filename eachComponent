@@ -1,0 +1,382 @@
+// Mainページコンポーネント (MainPage.tsx)
+import React, { useState } from 'react';
+import Button from '@mui/material/Button';
+import ModalComponent from './ModalComponent';
+
+const MainPage: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleButtonClick = () => {
+    setIsModalOpen(true);
+  };
+
+  return (
+    <div>
+      <Button onClick={handleButtonClick}>システム設定</Button>
+      {isModalOpen && <ModalComponent onClose={() => setIsModalOpen(false)} />}
+    </div>
+  );
+};
+
+export default MainPage;
+
+// モーダルコンポーネント (ModalComponent.tsx)
+import React, { useState } from 'react';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import DisplaySettingsTab from './DisplaySettingsTab';
+import SubsystemSettingsTab from './SubsystemSettingsTab';
+
+interface ModalComponentProps {
+  onClose: () => void;
+}
+
+const ModalComponent: React.FC<ModalComponentProps> = ({ onClose }) => {
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
+  return (
+    <div>
+      <Tabs value={selectedTab} onChange={handleTabChange}>
+        <Tab label="表示設定" />
+        <Tab label="サブシステム設定" />
+      </Tabs>
+      <div>
+        {selectedTab === 0 && <DisplaySettingsTab />}
+        {selectedTab === 1 && <SubsystemSettingsTab />}
+      </div>
+      <Button onClick={onClose}>閉じる</Button>
+    </div>
+  );
+};
+
+export default ModalComponent;
+
+// DisplaySettingsTab.tsx
+import React, { useState } from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+
+interface DisplaySettingsTabProps {
+  suppliers: { id: number; name: string }[];
+}
+
+const DisplaySettingsTab: React.FC<DisplaySettingsTabProps> = ({ suppliers }) => {
+  const [selectedTypes, setSelectedTypes] = useState<{ [key: number]: number }>({});
+
+  const handleTypeChange = (supplierId: number) => (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setSelectedTypes((prevSelectedTypes) => ({
+      ...prevSelectedTypes,
+      [supplierId]: event.target.value as number,
+    }));
+  };
+
+  return (
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>サプライヤ名</TableCell>
+          <TableCell>表示タイプ</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {suppliers.map((supplier) => (
+          <TableRow key={supplier.id}>
+            <TableCell>{supplier.name}</TableCell>
+            <TableCell>
+              <Select
+                value={selectedTypes[supplier.id] || 1}
+                onChange={handleTypeChange(supplier.id)}
+              >
+                <MenuItem value={1}>カテゴリ</MenuItem>
+                <MenuItem value={2}>サブシステム</MenuItem>
+              </Select>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
+
+export default DisplaySettingsTab;
+
+// SupplierDropdown.tsx
+import React, { useState, useEffect } from 'react';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+
+interface SupplierDropdownProps {
+  suppliers: { id: number; name: string }[];
+  onChange: (selectedSupplierId: number) => void;
+}
+
+const SupplierDropdown: React.FC<SupplierDropdownProps> = ({ suppliers, onChange }) => {
+  const [selectedSupplierId, setSelectedSupplierId] = useState(suppliers[0]?.id || 0);
+
+  useEffect(() => {
+    onChange(selectedSupplierId);
+  }, [selectedSupplierId, onChange]);
+
+  return (
+    <Select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(Number(e.target.value))}>
+      {suppliers.map((supplier) => (
+        <MenuItem key={supplier.id} value={supplier.id}>
+          {supplier.name}
+        </MenuItem>
+      ))}
+    </Select>
+  );
+};
+
+export default SupplierDropdown;
+
+// IDを使ってインデックスからデータを取るべき
+// SubsystemList.tsx
+import React, { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import SupplierDropdown from './SupplierDropdown';
+import SubsystemEditDialog from './SubsystemEditDialog';
+
+interface SubsystemListProps {
+  selectedSupplierId: number;
+}
+
+const SubsystemList: React.FC<SubsystemListProps> = ({ selectedSupplierId }) => {
+  const [subsystems, setSubsystems] = useState<{ id: number; name: string }[]>([]);
+  const [newSubsystemName, setNewSubsystemName] = useState('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedSubsystem, setSelectedSubsystem] = useState<{ id: number; name: string }>({
+    id: 0,
+    name: '',
+  });
+
+  const handleAddSubsystem = () => {
+    if (newSubsystemName.trim() === '') return;
+    setSubsystems((prevSubsystems) => [
+      ...prevSubsystems,
+      { id: prevSubsystems.length + 1, name: newSubsystemName },
+    ]);
+    setNewSubsystemName('');
+  };
+
+  const handleEditClick = (subsystem: { id: number; name: string }) => {
+    setSelectedSubsystem(subsystem);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSave = (editedName: string) => {
+    setSubsystems((prevSubsystems) =>
+      prevSubsystems.map((subsystem) =>
+        subsystem.id === selectedSubsystem.id ? { ...subsystem, name: editedName } : subsystem
+      )
+    );
+    setEditDialogOpen(false);
+  };
+
+  const handleDelete = () => {
+    setSubsystems((prevSubsystems) =>
+      prevSubsystems.filter((subsystem) => subsystem.id !== selectedSubsystem.id)
+    );
+    setEditDialogOpen(false);
+  };
+
+  return (
+    <div>
+      <TextField
+        placeholder="サブシステム名称を入力"
+        value={newSubsystemName}
+        onChange={(e) => setNewSubsystemName(e.target.value)}
+      />
+      <Button onClick={handleAddSubsystem}>追加</Button>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>ID</TableCell>
+            <TableCell>名称</TableCell>
+            <TableCell>操作</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {subsystems.map((subsystem) => (
+            <TableRow key={subsystem.id} onClick={() => handleEditClick(subsystem)}>
+              <TableCell>{subsystem.id}</TableCell>
+              <TableCell>{subsystem.name}</TableCell>
+              <TableCell>
+                <Button onClick={(e) => e.stopPropagation()}>{/* ボタン操作なし */}</Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <SubsystemEditDialog
+        open={editDialogOpen}
+        initialName={selectedSubsystem.name}
+        onSave={handleEditSave}
+        onDelete={handleDelete}
+        onClose={() => setEditDialogOpen(false)}
+      />
+    </div>
+  );
+};
+
+export default SubsystemList;
+
+// SubsystemEditDialog.tsx
+import React, { useState } from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+
+interface SubsystemEditDialogProps {
+  open: boolean;
+  initialName: string;
+  onSave: (editedName: string) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}
+
+const SubsystemEditDialog: React.FC<SubsystemEditDialogProps> = ({
+  open,
+  initialName,
+  onSave,
+  onDelete,
+  onClose,
+}) => {
+  const [editedName, setEditedName] = useState(initialName);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = () => {
+    onSave(editedName);
+    setIsEditing(false);
+  };
+
+  const handleDeleteClick = () => {
+    onDelete();
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>サブシステム名編集ダイアログ</DialogTitle>
+      <DialogContent>
+        <TextField
+          value={editedName}
+          onChange={(e) => setEditedName(e.target.value)}
+          disabled={!isEditing}
+        />
+      </DialogContent>
+      <DialogActions>
+        {!isEditing ? (
+          <Button onClick={handleEditClick}>編集</Button>
+        ) : (
+          <>
+            <Button onClick={handleSaveClick}>保存</Button>
+            <Button onClick={handleDeleteClick}>削除</Button>
+          </>
+        )}
+        <Button onClick={onClose}>閉じる</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default SubsystemEditDialog;
+
+// ModuleLinkingComponent.tsx
+import React, { useState, useEffect } from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import SupplierDropdown from './SupplierDropdown';
+import { SubsystemList } from './SubsystemList';
+
+interface ModuleLinkingComponentProps {
+  suppliers: { id: number; name: string }[];
+  modules: { sup_id: number; module_id: number; name: string }[];
+  selectedSupplierId: number;
+}
+
+const ModuleLinkingComponent: React.FC<ModuleLinkingComponentProps> = ({
+  suppliers,
+  modules,
+  selectedSupplierId,
+}) => {
+  const [linkedModules, setLinkedModules] = useState<{ module_id: number; subsystem: string }[]>([]);
+  const [selectedSubsystem, setSelectedSubsystem] = useState<string>('変更なし');
+
+  useEffect(() => {
+    const updatedLinkedModules = modules
+      .filter((module) => module.sup_id === selectedSupplierId)
+      .map((module) => ({ module_id: module.module_id, subsystem: selectedSubsystem }));
+    setLinkedModules(updatedLinkedModules);
+  }, [selectedSupplierId, selectedSubsystem, modules]);
+
+  return (
+    <div>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>モジュール名</TableCell>
+            <TableCell>サブシステム選択</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {linkedModules.map((linkedModule) => (
+            <TableRow key={linkedModule.module_id}>
+              <TableCell>{linkedModule.module_id}</TableCell>
+              <TableCell>
+                <Select
+                  value={linkedModule.subsystem}
+                  onChange={(e) => {
+                    const updatedLinkedModules = linkedModules.map((module) =>
+                      module.module_id === linkedModule.module_id
+                        ? { ...module, subsystem: e.target.value as string }
+                        : module
+                    );
+                    setLinkedModules(updatedLinkedModules);
+                  }}
+                >
+                  {['変更なし', ...SubsystemList].map((subsystem) => (
+                    <MenuItem key={subsystem} value={subsystem}>
+                      {subsystem}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <SupplierDropdown suppliers={suppliers} onChange={(id) => setSelectedSupplierId(id)} />
+    </div>
+  );
+};
+
+export default ModuleLinkingComponent;

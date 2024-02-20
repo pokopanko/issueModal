@@ -1,0 +1,42 @@
+import React, { useState, useEffect } from 'react';
+
+const YourComponent = () => {
+  const [id, setId] = useState(2);
+
+  const getXdeta = (id) => {
+    // Implement your getXdeta logic here
+    console.log(`getXdeta(${id}) called`);
+  };
+
+  const getYdata = (id) => {
+    // Implement your getYdata logic here
+    console.log(`getYdata(${id}) called`);
+  };
+
+  const handleChange = (selectedId) => {
+    setId(selectedId);
+  };
+
+  useEffect(() => {
+    // Run getXdeta and getYdata on initial render
+    getXdeta(id);
+    getYdata(id);
+  }, [id]); // Run when id changes
+
+  return (
+    <div>
+      {/* Your dropdown component */}
+      <select onChange={(e) => handleChange(e.target.value)}>
+        {/* Dropdown options */}
+        <option value="1">Option 1</option>
+        <option value="2">Option 2</option>
+        {/* Add more options as needed */}
+      </select>
+
+      {/* Render other components or data based on id */}
+      <p>ID: {id}</p>
+    </div>
+  );
+};
+
+export default YourComponent;
