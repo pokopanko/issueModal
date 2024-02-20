@@ -4,12 +4,15 @@ import { Button } from "@mui/material";
 import CustomModal from "../components/Modal";
 import "./TopPageStyles.css"; // CSSファイルをimport
 import { generateURL } from "../logic/url";
+import { sortFoldersAndFiles } from "../logic/tree.logic";
+import { data } from "../common/data/treeData";
 
 const TopPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleShowModal = () => {
     setModalOpen(true);
+    console.log(sortFoldersAndFiles(data));
   };
 
   const handleCloseModal = () => {
