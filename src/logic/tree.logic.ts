@@ -45,3 +45,60 @@ export const sortFoldersAndFiles = (data: FileInfo[]): Node[] => {
 
   return root.children ?? [];
 };
+
+interface ErrType {
+  name: string;
+  data: number;
+  err_id: number[];
+}
+
+export const Errdata: ErrType[] = [
+  {
+    name: "test1",
+    data: 123,
+    err_id: [10, 7, 3],
+  },
+  {
+    name: "test2",
+    data: 10,
+    err_id: [1, 5, 7],
+  },
+  {
+    name: "testA",
+    data: 52,
+    err_id: [2, 5, 1, 3],
+  },
+];
+
+export const groupData = (data: ErrType[]) => {
+  // 各err_idごとにErr_Typeのままデータを格納
+  const groupedData: { [key: number]: { name: string; children: ErrType[] } } = {};
+  data.forEach((item) => {
+    item.err_id.forEach((id) => {
+      if (!groupedData[id]) {
+        // groupedData[id] = [];
+        groupedData[id] = {
+          name: `Err_${id}`,
+          children: [],
+        };
+      }
+      groupedData[id].children.push(item);
+    });
+  });
+
+  // err_idでソート
+  const sortedKeys = Object.keys(groupedData).sort(
+    (a, b) => parseInt(a) - parseInt(b)
+  );
+  const sortedData = sortedKeys.map((errId) => {
+    const { name, children } = groupedData[parseInt(errId)];
+    convert(children)
+    return { name, children };
+  });  
+  console.log("sortedData",sortedData)
+
+  function convert(data: ErrType[]) {
+    // 何らかの処理
+    console.log("data>>>", data);
+  }
+};
