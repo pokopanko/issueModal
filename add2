@@ -1,0 +1,69 @@
+import React, { useState } from 'react';
+
+type TableData = {
+  isHeader: boolean;
+  data: string[];
+  name: string;
+  event: () => void; // イベント関数の型を指定
+};
+
+type TablePartsProps = {
+  data: TableData[];
+  onRowClick: (name: string) => void; // 行がクリックされたときに呼び出す関数の型を指定
+};
+
+const TablePartsComponent: React.FC<TablePartsProps> = ({ data, onRowClick }) => {
+  return (
+    <table>
+      <tbody>
+        {data.map((item, index) => (
+          <tr key={index} onClick={() => onRowClick(item.name)}>
+            {item.data.map((cell, cellIndex) => (
+              <td key={cellIndex}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+type PageComponentState = {
+  clickedName: string | null;
+};
+
+const PageComponent: React.FC = () => {
+  const [clickedName, setClickedName] = useState<PageComponentState['clickedName']>(null);
+
+  const handleRowClick = (name: string) => {
+    setClickedName(name);
+  };
+
+  return (
+    <div>
+      <h1>Clicked Name: {clickedName}</h1>
+      <TablePartsComponent data={sampleData} onRowClick={handleRowClick} />
+    </div>
+  );
+};
+
+const sampleData: TableData[] = [
+  {
+    isHeader: false,
+    data: ['data1', 'data2', 'data3'],
+    name: 'Name1',
+    event: () => {
+      // イベントの処理
+    },
+  },
+  {
+    isHeader: false,
+    data: ['data4', 'data5', 'data6'],
+    name: 'Name2',
+    event: () => {
+      // イベントの処理
+    },
+  },
+];
+
+export default PageComponent;
