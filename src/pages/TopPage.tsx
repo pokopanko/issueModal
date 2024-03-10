@@ -5,6 +5,7 @@ import CustomModal from "../components/Modal";
 import "./TopPageStyles.css"; // CSSファイルをimport
 import { generateURL } from "../logic/url";
 import { Errdata, groupData } from "../logic/tree.logic";
+import { TablePage } from "./Table.page";
 
 const TopPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,6 +47,7 @@ const TopPage: React.FC = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmitInfo}
       />
+      <TablePage />
     </div>
   );
 };
